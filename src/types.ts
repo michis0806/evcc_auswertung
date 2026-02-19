@@ -15,10 +15,10 @@ export interface AppState {
 
 export interface Env {
   STATE: KVNamespace;
-  EVCC_BACKUP: R2Bucket;
+  EVCC_BACKUP?: R2Bucket;
   EVCC_URL: string;
-  EVCC_ADMIN_PASS: string;
-  EVCC_BACKUP_DAYS: string;
+  EVCC_ADMIN_PASS?: string;
+  EVCC_BACKUP_DAYS?: string;
   CARS: string;
   SMTP_HOST: string;
   SMTP_PORT: string;
