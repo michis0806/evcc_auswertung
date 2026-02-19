@@ -24,6 +24,7 @@ export interface Env {
   LADEPUNKT_FROM: string;
   LADEPUNKT_RECIPIENTS: string;
   LADEPUNKT_RECIPIENTS_MONTHLY: string;
+  MIN_BILLING_AMOUNT: string;
 }
 
 export interface MonthInfo {

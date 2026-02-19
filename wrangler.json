@@ -11,5 +11,8 @@
       "binding": "STATE",
       "id": "<KV_NAMESPACE_ID>"
     }
-  ]
+  ],
+  "vars": {
+    "MIN_BILLING_AMOUNT": "25"
+  }
 }
