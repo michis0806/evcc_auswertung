@@ -1,11 +1,19 @@
 {
   "name": "evcc-auswertung",
   "main": "src/index.ts",
-  "compatibility_date": "2025-01-01",
+  "compatibility_date": "2026-02-19",
   "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
   "triggers": {
     "crons": ["0 8 1 * *"]
   },
+  "kv_namespaces": [
+    {
+      "binding": "STATE",
+      "id": "54cb7818b643457a83ffd74a16e0e23e"
+    }
+  ],
   "vars": {
     "MIN_BILLING_AMOUNT": "25"
   }
