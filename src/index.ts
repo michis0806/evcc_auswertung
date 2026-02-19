@@ -2,16 +2,25 @@ import { Env, AppState, MonthInfo } from './types';
 import { fetchCharges } from './evcc';
 import { generateExcel } from './excel';
 import { buildHtmlEmail, sendEmail } from './email';
+import { performBackup } from './backup';
 import { round2, formatMonthDE } from './utils';
 
 export default {
   async scheduled(
-    _event: ScheduledEvent,
+    event: ScheduledEvent,
     env: Env,
     _ctx: ExecutionContext,
   ): Promise<void> {
-    console.log('Ladepunkt-Abrechnung wird gestartet...');
-    await processCharges(env);
+    if (event.cron === '0 3 * * *') {
+      // Tägliches Backup
+      console.log('evcc Backup wird gestartet...');
+      const key = await performBackup(env);
+      console.log(`Backup abgeschlossen: ${key}`);
+    } else {
+      // Monatliche Abrechnung
+      console.log('Ladepunkt-Abrechnung wird gestartet...');
+      await processCharges(env);
+    }
   },
 
   async fetch(
@@ -26,6 +35,19 @@ export default {
       try {
         await processCharges(env);
         return Response.json({ success: true });
+      } catch (error) {
+        return Response.json(
+          { success: false, error: String(error) },
+          { status: 500 },
+        );
+      }
+    }
+
+    // POST /backup – manuelles Backup
+    if (url.pathname === '/backup' && request.method === 'POST') {
+      try {
+        const key = await performBackup(env);
+        return Response.json({ success: true, key });
       } catch (error) {
         return Response.json(
           { success: false, error: String(error) },

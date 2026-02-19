@@ -1,0 +1,79 @@
+import { Env } from './types';
+
+export async function performBackup(env: Env): Promise<string> {
+  const baseUrl = env.EVCC_URL.replace(/\/+$/, '');
+
+  // Bei evcc einloggen, um Auth-Cookie zu erhalten
+  const loginRes = await fetch(`${baseUrl}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: env.EVCC_ADMIN_PASS }),
+  });
+
+  if (!loginRes.ok) {
+    throw new Error(`evcc Login fehlgeschlagen: HTTP ${loginRes.status}`);
+  }
+
+  const setCookie = loginRes.headers.get('set-cookie');
+  if (!setCookie) {
+    throw new Error('evcc Login: Kein Auth-Cookie erhalten');
+  }
+
+  // Cookie-Wert extrahieren (vor dem ersten Semikolon)
+  const cookieHeader = setCookie.split(';')[0];
+
+  // SQLite-Backup über die API herunterladen
+  const backupRes = await fetch(`${baseUrl}/api/system/backup`, {
+    method: 'POST',
+    headers: { Cookie: cookieHeader },
+  });
+
+  if (!backupRes.ok) {
+    throw new Error(`evcc Backup fehlgeschlagen: HTTP ${backupRes.status}`);
+  }
+
+  const dbData = await backupRes.arrayBuffer();
+  if (dbData.byteLength === 0) {
+    throw new Error('evcc Backup: Leere Antwort erhalten');
+  }
+
+  // In R2 speichern mit Datum als Key
+  const now = new Date();
+  const dateStr = now.toISOString().slice(0, 10);
+  const timeStr = now.toISOString().slice(11, 16).replace(':', '-');
+  const key = `evcc-backup-${dateStr}--${timeStr}.db`;
+
+  await env.EVCC_BACKUP.put(key, dbData);
+  const sizeMB = (dbData.byteLength / 1024 / 1024).toFixed(2);
+  console.log(`Backup gespeichert: ${key} (${sizeMB} MB)`);
+
+  // Alte Backups aufräumen
+  await cleanupOldBackups(env);
+
+  return key;
+}
+
+async function cleanupOldBackups(env: Env): Promise<void> {
+  const retentionDays = parseInt(env.EVCC_BACKUP_DAYS || '30', 10);
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - retentionDays);
+
+  const listed = await env.EVCC_BACKUP.list({ prefix: 'evcc-backup-' });
+  let deleted = 0;
+
+  for (const obj of listed.objects) {
+    // Key-Format: evcc-backup-YYYY-MM-DD--HH-MM.db
+    const dateMatch = obj.key.match(/evcc-backup-(\d{4}-\d{2}-\d{2})/);
+    if (!dateMatch) continue;
+
+    const backupDate = new Date(dateMatch[1]);
+    if (backupDate < cutoff) {
+      await env.EVCC_BACKUP.delete(obj.key);
+      deleted++;
+    }
+  }
+
+  if (deleted > 0) {
+    console.log(`${deleted} alte Backup(s) gelöscht (älter als ${retentionDays} Tage)`);
+  }
+}
