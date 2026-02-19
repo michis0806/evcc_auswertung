@@ -10,7 +10,8 @@
   },
   "r2_buckets": [
     {
-      "binding": "EVCC_BACKUP"
+      "binding": "EVCC_BACKUP",
+      "jurisdiction": "eu"
     }
   ],
   "kv_namespaces": [
