@@ -11,19 +11,24 @@ export default {
     env: Env,
     _ctx: ExecutionContext,
   ): Promise<void> {
-    if (event.cron === '0 3 * * *') {
-      // Tägliches Backup (nur wenn R2-Binding konfiguriert)
-      if (!env.EVCC_BACKUP) {
-        console.log('Backup übersprungen: kein EVCC_BACKUP R2-Binding konfiguriert');
-        return;
+    try {
+      if (event.cron === '0 3 * * *') {
+        // Tägliches Backup (nur wenn R2-Binding konfiguriert)
+        if (!env.EVCC_BACKUP) {
+          console.log('Backup übersprungen: kein EVCC_BACKUP R2-Binding konfiguriert');
+          return;
+        }
+        console.log('evcc Backup wird gestartet...');
+        const key = await performBackup(env);
+        console.log(`Backup abgeschlossen: ${key}`);
+      } else {
+        // Monatliche Abrechnung
+        console.log('Ladepunkt-Abrechnung wird gestartet...');
+        await processCharges(env);
       }
-      console.log('evcc Backup wird gestartet...');
-      const key = await performBackup(env);
-      console.log(`Backup abgeschlossen: ${key}`);
-    } else {
-      // Monatliche Abrechnung
-      console.log('Ladepunkt-Abrechnung wird gestartet...');
-      await processCharges(env);
+    } catch (error) {
+      console.error(`Cron ${event.cron} fehlgeschlagen:`, error);
+      throw error;
     }
   },
 
@@ -40,6 +45,7 @@ export default {
         await processCharges(env);
         return Response.json({ success: true });
       } catch (error) {
+        console.error('Trigger fehlgeschlagen:', error);
         return Response.json(
           { success: false, error: String(error) },
           { status: 500 },
@@ -59,6 +65,7 @@ export default {
         const key = await performBackup(env);
         return Response.json({ success: true, key });
       } catch (error) {
+        console.error('Backup fehlgeschlagen:', error);
         return Response.json(
           { success: false, error: String(error) },
           { status: 500 },
