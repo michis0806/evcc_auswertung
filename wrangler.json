@@ -8,6 +8,19 @@
   "triggers": {
     "crons": ["0 8 1 * *", "0 3 * * *"]
   },
+  "r2_buckets": [
+    {
+      "binding": "EVCC_BACKUP",
+      "bucket_name": "evcc-backup",
+      "jurisdiction": "eu"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "STATE",
+      "id": "54cb7818b643457a83ffd74a16e0e23e"
+    }
+  ],
   "vars": {
     "MIN_BILLING_AMOUNT": "25"
   },
