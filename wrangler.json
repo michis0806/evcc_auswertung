@@ -1,0 +1,22 @@
+{
+  "name": "evcc-ladepunkt",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-01-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "triggers": {
+    "crons": ["0 8 1 * *"]
+  },
+  "kv_namespaces": [
+    {
+      "binding": "STATE",
+      "id": "<KV_NAMESPACE_ID>"
+    }
+  ],
+  "vars": {
+    "EVCC_URL": "https://your-evcc-instance.example.com/api/sessions?format=json&month=",
+    "CARS": "ID.BUZZ",
+    "EMAIL_FROM": "Ladebericht <ladebericht@example.com>",
+    "RECIPIENTS": "empfaenger@example.com",
+    "RECIPIENTS_MONTHLY": "empfaenger@example.com"
+  }
+}
