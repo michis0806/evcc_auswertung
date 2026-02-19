@@ -7,8 +7,10 @@ export async function fetchCharges(
   const cars = env.CARS.split(',').map((c) => c.trim());
   const chargesByMonth = new Map<string, Charge[]>();
 
+  const baseUrl = env.EVCC_URL.replace(/\/+$/, '');
+
   for (const month of months) {
-    const url = `${env.EVCC_URL}${month.month}&year=${month.year}`;
+    const url = `${baseUrl}/api/sessions?month=${month.month}&year=${month.year}`;
 
     try {
       const response = await fetch(url, {
