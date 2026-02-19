@@ -54,7 +54,7 @@ export async function performBackup(env: Env): Promise<string> {
   const timeStr = now.toISOString().slice(11, 16).replace(':', '-');
   const key = `evcc-backup-${dateStr}--${timeStr}.db`;
 
-  await bucket.put(key, dbData);
+  await bucket.put(key, dbData, { storageClass: 'InfrequentAccess' });
   const sizeMB = (dbData.byteLength / 1024 / 1024).toFixed(2);
   console.log(`Backup gespeichert: ${key} (${sizeMB} MB)`);
 
