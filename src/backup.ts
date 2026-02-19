@@ -16,7 +16,8 @@ export async function performBackup(env: Env): Promise<string> {
   });
 
   if (!loginRes.ok) {
-    throw new Error(`evcc Login fehlgeschlagen: HTTP ${loginRes.status}`);
+    const body = await loginRes.text().catch(() => '');
+    throw new Error(`evcc Login fehlgeschlagen: HTTP ${loginRes.status} – ${body}`);
   }
 
   const setCookie = loginRes.headers.get('set-cookie');
@@ -29,12 +30,12 @@ export async function performBackup(env: Env): Promise<string> {
 
   // SQLite-Backup über die API herunterladen
   const backupRes = await fetch(`${baseUrl}/api/system/backup`, {
-    method: 'POST',
     headers: { Cookie: cookieHeader },
   });
 
   if (!backupRes.ok) {
-    throw new Error(`evcc Backup fehlgeschlagen: HTTP ${backupRes.status}`);
+    const body = await backupRes.text().catch(() => '');
+    throw new Error(`evcc Backup fehlgeschlagen: HTTP ${backupRes.status} – ${body}`);
   }
 
   const dbData = await backupRes.arrayBuffer();
