@@ -28,9 +28,14 @@ export async function performBackup(env: Env): Promise<string> {
   // Cookie-Wert extrahieren (vor dem ersten Semikolon)
   const cookieHeader = setCookie.split(';')[0];
 
-  // SQLite-Backup über die API herunterladen
+  // SQLite-Backup über die API herunterladen (POST mit Passwort im Body)
   const backupRes = await fetch(`${baseUrl}/api/system/backup`, {
-    headers: { Cookie: cookieHeader },
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Cookie: cookieHeader,
+    },
+    body: JSON.stringify({ password: env.EVCC_ADMIN_PASS }),
   });
 
   if (!backupRes.ok) {
