@@ -8,6 +8,16 @@
   "triggers": {
     "crons": ["0 8 1 * *", "0 3 * * *"]
   },
+  "r2_buckets": [
+    {
+      "binding": "EVCC_BACKUP"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "STATE"
+    }
+  ],
   "vars": {
     "MIN_BILLING_AMOUNT": "25"
   },
