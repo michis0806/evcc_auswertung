@@ -10,15 +10,12 @@
   },
   "r2_buckets": [
     {
-      "binding": "EVCC_BACKUP",
-      "bucket_name": "evcc-backup",
-      "jurisdiction": "eu"
+      "binding": "EVCC_BACKUP"
     }
   ],
   "kv_namespaces": [
     {
-      "binding": "STATE",
-      "id": "54cb7818b643457a83ffd74a16e0e23e"
+      "binding": "STATE"
     }
   ],
   "vars": {
