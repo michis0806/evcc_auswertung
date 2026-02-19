@@ -44,3 +44,16 @@ export function uint8ArrayToBase64(bytes: Uint8Array): string {
   }
   return btoa(binary);
 }
+
+export function utf8ToBase64(str: string): string {
+  return uint8ArrayToBase64(new TextEncoder().encode(str));
+}
+
+/** Base64-String in 76-Zeichen-Zeilen umbrechen (RFC 2045). */
+export function wrapBase64(b64: string, lineLen = 76): string {
+  const lines: string[] = [];
+  for (let i = 0; i < b64.length; i += lineLen) {
+    lines.push(b64.substring(i, i + lineLen));
+  }
+  return lines.join('\r\n');
+}

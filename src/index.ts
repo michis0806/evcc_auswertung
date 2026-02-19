@@ -124,15 +124,20 @@ async function processCharges(env: Env): Promise<void> {
 
   const subject = `Ladevorgänge zuhause ID.BUZZ OA-FX25E vom ${periodLabel}`;
   const recipients = (
-    fullBilling ? env.RECIPIENTS : env.RECIPIENTS_MONTHLY
+    fullBilling ? env.LADEPUNKT_RECIPIENTS : env.LADEPUNKT_RECIPIENTS_MONTHLY
   )
     .split(',')
     .map((s) => s.trim());
 
-  // Email senden
+  // Email per SMTP senden
   await sendEmail(
-    env.RESEND_API_KEY,
-    env.EMAIL_FROM,
+    {
+      host: env.SMTP_HOST,
+      port: parseInt(env.SMTP_PORT, 10),
+      username: env.SMTP_USERNAME,
+      password: env.SMTP_PASSWORD,
+    },
+    env.LADEPUNKT_FROM,
     recipients,
     subject,
     html,

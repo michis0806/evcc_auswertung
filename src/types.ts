@@ -17,10 +17,13 @@ export interface Env {
   STATE: KVNamespace;
   EVCC_URL: string;
   CARS: string;
-  RESEND_API_KEY: string; // wrangler secret put RESEND_API_KEY
-  EMAIL_FROM: string;
-  RECIPIENTS: string;
-  RECIPIENTS_MONTHLY: string;
+  SMTP_HOST: string;
+  SMTP_PORT: string;
+  SMTP_USERNAME: string; // wrangler secret put SMTP_USERNAME
+  SMTP_PASSWORD: string; // wrangler secret put SMTP_PASSWORD
+  LADEPUNKT_FROM: string;
+  LADEPUNKT_RECIPIENTS: string;
+  LADEPUNKT_RECIPIENTS_MONTHLY: string;
 }
 
 export interface MonthInfo {
