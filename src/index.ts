@@ -89,9 +89,10 @@ async function processCharges(env: Env): Promise<void> {
 
   // Abrechnungstyp bestimmen:
   //   Dezember → volle Abrechnung (Jahreswechsel)
-  //   >= 25 EUR → volle Abrechnung
+  //   >= Mindestbetrag → volle Abrechnung
+  const minAmount = parseFloat(env.MIN_BILLING_AMOUNT || '25');
   const includesDecember = months.some((m) => m.month === 12);
-  const fullBilling = totalPrice >= 25 || includesDecember;
+  const fullBilling = totalPrice >= minAmount || includesDecember;
 
   // Zeitraum-Label
   const periodLabel =
