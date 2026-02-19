@@ -11,14 +11,5 @@
       "binding": "STATE",
       "id": "<KV_NAMESPACE_ID>"
     }
-  ],
-  "vars": {
-    "EVCC_URL": "https://your-evcc-instance.example.com/api/sessions?format=json&month=",
-    "CARS": "ID.BUZZ",
-    "SMTP_HOST": "smtp.example.com",
-    "SMTP_PORT": "587",
-    "LADEPUNKT_FROM": "Ladebericht <ladebericht@example.com>",
-    "LADEPUNKT_RECIPIENTS": "empfaenger@example.com",
-    "LADEPUNKT_RECIPIENTS_MONTHLY": "empfaenger@example.com"
-  }
+  ]
 }
