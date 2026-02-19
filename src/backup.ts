@@ -1,6 +1,11 @@
 import { Env } from './types';
 
 export async function performBackup(env: Env): Promise<string> {
+  if (!env.EVCC_BACKUP) {
+    throw new Error('Kein EVCC_BACKUP R2-Binding konfiguriert');
+  }
+
+  const bucket = env.EVCC_BACKUP;
   const baseUrl = env.EVCC_URL.replace(/\/+$/, '');
 
   // Bei evcc einloggen, um Auth-Cookie zu erhalten
@@ -43,22 +48,25 @@ export async function performBackup(env: Env): Promise<string> {
   const timeStr = now.toISOString().slice(11, 16).replace(':', '-');
   const key = `evcc-backup-${dateStr}--${timeStr}.db`;
 
-  await env.EVCC_BACKUP.put(key, dbData);
+  await bucket.put(key, dbData);
   const sizeMB = (dbData.byteLength / 1024 / 1024).toFixed(2);
   console.log(`Backup gespeichert: ${key} (${sizeMB} MB)`);
 
   // Alte Backups aufräumen
-  await cleanupOldBackups(env);
+  await cleanupOldBackups(bucket, env.EVCC_BACKUP_DAYS);
 
   return key;
 }
 
-async function cleanupOldBackups(env: Env): Promise<void> {
-  const retentionDays = parseInt(env.EVCC_BACKUP_DAYS || '30', 10);
+async function cleanupOldBackups(
+  bucket: R2Bucket,
+  backupDays?: string,
+): Promise<void> {
+  const retentionDays = parseInt(backupDays || '30', 10);
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - retentionDays);
 
-  const listed = await env.EVCC_BACKUP.list({ prefix: 'evcc-backup-' });
+  const listed = await bucket.list({ prefix: 'evcc-backup-' });
   let deleted = 0;
 
   for (const obj of listed.objects) {
@@ -68,7 +76,7 @@ async function cleanupOldBackups(env: Env): Promise<void> {
 
     const backupDate = new Date(dateMatch[1]);
     if (backupDate < cutoff) {
-      await env.EVCC_BACKUP.delete(obj.key);
+      await bucket.delete(obj.key);
       deleted++;
     }
   }

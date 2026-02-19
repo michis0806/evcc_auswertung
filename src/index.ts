@@ -12,7 +12,11 @@ export default {
     _ctx: ExecutionContext,
   ): Promise<void> {
     if (event.cron === '0 3 * * *') {
-      // Tägliches Backup
+      // Tägliches Backup (nur wenn R2-Binding konfiguriert)
+      if (!env.EVCC_BACKUP) {
+        console.log('Backup übersprungen: kein EVCC_BACKUP R2-Binding konfiguriert');
+        return;
+      }
       console.log('evcc Backup wird gestartet...');
       const key = await performBackup(env);
       console.log(`Backup abgeschlossen: ${key}`);
@@ -45,6 +49,12 @@ export default {
 
     // POST /backup – manuelles Backup
     if (url.pathname === '/backup' && request.method === 'POST') {
+      if (!env.EVCC_BACKUP) {
+        return Response.json(
+          { success: false, error: 'Kein EVCC_BACKUP R2-Binding konfiguriert' },
+          { status: 501 },
+        );
+      }
       try {
         const key = await performBackup(env);
         return Response.json({ success: true, key });
