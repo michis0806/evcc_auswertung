@@ -24,9 +24,9 @@ export interface Env {
   SMTP_PORT: string;
   SMTP_USERNAME: string; // wrangler secret put SMTP_USERNAME
   SMTP_PASSWORD: string; // wrangler secret put SMTP_PASSWORD
-  LADEPUNKT_FROM: string;
-  LADEPUNKT_RECIPIENTS: string;
-  LADEPUNKT_RECIPIENTS_MONTHLY: string;
+  SMTP_FROM: string;
+  INVOICE_RECIPIENTS: string;
+  SUMMARY_RECIPIENTS: string;
   MIN_BILLING_AMOUNT: string;
 }
 

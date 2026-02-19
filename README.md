@@ -73,9 +73,9 @@ Alle Secrets werden über `wrangler secret put <NAME>` gesetzt:
 | `SMTP_PORT`                  | SMTP-Port                                       |
 | `SMTP_USERNAME`              | SMTP-Benutzername                               |
 | `SMTP_PASSWORD`              | SMTP-Passwort                                   |
-| `LADEPUNKT_FROM`             | Absender-E-Mail-Adresse                         |
-| `LADEPUNKT_RECIPIENTS`       | Empfänger bei voller Abrechnung (kommagetrennt) |
-| `LADEPUNKT_RECIPIENTS_MONTHLY` | Empfänger bei monatlicher Zusammenfassung     |
+| `SMTP_FROM`             | Absender-E-Mail-Adresse                         |
+| `INVOICE_RECIPIENTS`       | Empfänger bei voller Abrechnung (kommagetrennt) |
+| `SUMMARY_RECIPIENTS` | Empfänger bei monatlicher Zusammenfassung     |
 
 ## Umgebungsvariablen
 
@@ -100,9 +100,9 @@ wrangler secret put SMTP_HOST
 wrangler secret put SMTP_PORT
 wrangler secret put SMTP_USERNAME
 wrangler secret put SMTP_PASSWORD
-wrangler secret put LADEPUNKT_FROM
-wrangler secret put LADEPUNKT_RECIPIENTS
-wrangler secret put LADEPUNKT_RECIPIENTS_MONTHLY
+wrangler secret put SMTP_FROM
+wrangler secret put INVOICE_RECIPIENTS
+wrangler secret put SUMMARY_RECIPIENTS
 
 # R2 Bucket anlegen
 wrangler r2 bucket create evcc-backup

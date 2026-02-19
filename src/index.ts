@@ -157,7 +157,7 @@ async function processCharges(env: Env): Promise<void> {
 
   const subject = `Ladevorgänge zuhause ID.BUZZ OA-FX25E vom ${periodLabel}`;
   const recipients = (
-    fullBilling ? env.LADEPUNKT_RECIPIENTS : env.LADEPUNKT_RECIPIENTS_MONTHLY
+    fullBilling ? env.INVOICE_RECIPIENTS : env.SUMMARY_RECIPIENTS
   )
     .split(',')
     .map((s) => s.trim());
@@ -170,7 +170,7 @@ async function processCharges(env: Env): Promise<void> {
       username: env.SMTP_USERNAME,
       password: env.SMTP_PASSWORD,
     },
-    env.LADEPUNKT_FROM,
+    env.SMTP_FROM,
     recipients,
     subject,
     html,
