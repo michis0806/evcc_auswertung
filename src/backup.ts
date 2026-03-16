@@ -54,7 +54,7 @@ export async function performBackup(env: Env): Promise<string> {
   const timeStr = now.toISOString().slice(11, 16).replace(':', '-');
   const key = `evcc-backup-${dateStr}--${timeStr}.db`;
 
-  await bucket.put(key, dbData, { storageClass: 'InfrequentAccess' });
+  await bucket.put(key, dbData);
   const sizeMB = (dbData.byteLength / 1024 / 1024).toFixed(2);
   console.log(`Backup gespeichert: ${key} (${sizeMB} MB)`);
 
@@ -68,7 +68,7 @@ async function cleanupOldBackups(
   bucket: R2Bucket,
   backupDays?: string,
 ): Promise<void> {
-  const retentionDays = parseInt(backupDays || '30', 10);
+  const retentionDays = parseInt(backupDays || '14', 10);
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - retentionDays);
 
