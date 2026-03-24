@@ -118,8 +118,47 @@ async function processCharges(env: Env): Promise<void> {
     `${allChargeCount} relevante Ladevorgänge, Gesamtkosten: ${totalPrice.toFixed(2)} EUR`,
   );
 
+  // Zeitraum-Label
+  const periodLabel =
+    months.length === 1
+      ? formatMonthDE(months[0].key)
+      : `${formatMonthDE(months[0].key)} bis ${formatMonthDE(months[months.length - 1].key)}`;
+
   if (allChargeCount === 0) {
-    console.log('Keine relevanten Ladevorgänge gefunden, überspringe.');
+    console.log('Keine relevanten Ladevorgänge gefunden, sende Info-Mail.');
+
+    const recipients = (env.SUMMARY_RECIPIENTS || env.INVOICE_RECIPIENTS)
+      .split(',')
+      .map((s) => s.trim());
+
+    const subject = `Ladevorgänge zuhause ID.BUZZ OA-FX25E vom ${periodLabel}`;
+    const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head>'
+      + '<body style="font-family:Arial,Helvetica,sans-serif;color:#333;margin:0;padding:20px;background-color:#f5f5f5;">'
+      + '<div style="max-width:800px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">'
+      + '<div style="background-color:#1a3a5c;color:#fff;padding:20px 24px;">'
+      + '<h2 style="margin:0;font-size:20px;">Ladevorg&auml;nge ID.BUZZ &ndash; OA-FX25E</h2>'
+      + `<p style="margin:6px 0 0;font-size:14px;opacity:0.85;">${periodLabel}</p>`
+      + '</div>'
+      + '<div style="padding:24px;">'
+      + `<p>Im Zeitraum <strong>${periodLabel}</strong> wurden keine relevanten Ladevorg&auml;nge erfasst.</p>`
+      + '</div></div></body></html>';
+    const text = `Ladevorgänge ID.BUZZ - OA-FX25E\n${periodLabel}\n\nKeine relevanten Ladevorgänge im angegebenen Zeitraum.`;
+
+    await sendEmail(
+      {
+        host: env.SMTP_HOST,
+        port: parseInt(env.SMTP_PORT, 10),
+        username: env.SMTP_USERNAME,
+        password: env.SMTP_PASSWORD,
+      },
+      env.SMTP_FROM,
+      recipients,
+      subject,
+      html,
+      text,
+    );
+
+    console.log('Info-Mail wurde erfolgreich verschickt.');
     state.last_billed_month = months[months.length - 1].key;
     await saveState(env, state);
     console.log(`Marker auf ${state.last_billed_month} gesetzt.`);
@@ -132,12 +171,6 @@ async function processCharges(env: Env): Promise<void> {
   const minAmount = parseFloat(env.MIN_BILLING_AMOUNT || '25');
   const includesDecember = months.some((m) => m.month === 12);
   const fullBilling = totalPrice >= minAmount || includesDecember;
-
-  // Zeitraum-Label
-  const periodLabel =
-    months.length === 1
-      ? formatMonthDE(months[0].key)
-      : `${formatMonthDE(months[0].key)} bis ${formatMonthDE(months[months.length - 1].key)}`;
 
   // Excel nur bei voller Abrechnung erzeugen
   let xlsxData: Uint8Array | undefined;
