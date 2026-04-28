@@ -9,12 +9,7 @@ export interface Charge {
   price: number;
 }
 
-export interface AppState {
-  last_billed_month: string | null;
-}
-
 export interface Env {
-  STATE: KVNamespace;
   EVCC_BACKUP?: R2Bucket;
   EVCC_URL: string;
   EVCC_ADMIN_PASS?: string;
@@ -22,12 +17,10 @@ export interface Env {
   CARS: string;
   SMTP_HOST: string;
   SMTP_PORT: string;
-  SMTP_USERNAME: string; // wrangler secret put SMTP_USERNAME
-  SMTP_PASSWORD: string; // wrangler secret put SMTP_PASSWORD
+  SMTP_USERNAME: string;
+  SMTP_PASSWORD: string;
   SMTP_FROM: string;
   INVOICE_RECIPIENTS: string;
-  SUMMARY_RECIPIENTS: string;
-  MIN_BILLING_AMOUNT: string;
 }
 
 export interface MonthInfo {

@@ -3,7 +3,6 @@ import { SmtpClient, SmtpConfig } from './smtp';
 import {
   round2,
   fmtNum,
-  formatMonthDE,
   formatDateDE,
   escapeHtml,
   uint8ArrayToBase64,
@@ -11,57 +10,37 @@ import {
   wrapBase64,
 } from './utils';
 
-// ---------------------------------------------------------------------------
-// HTML-Email aufbauen (identisch zum PHP-Original)
-// ---------------------------------------------------------------------------
+const HEADER_HTML = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head>'
+  + '<body style="font-family:Arial,Helvetica,sans-serif;color:#333;margin:0;padding:20px;background-color:#f5f5f5;">'
+  + '<div style="max-width:800px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">'
+  + '<div style="background-color:#1a3a5c;color:#fff;padding:20px 24px;">'
+  + '<h2 style="margin:0;font-size:20px;">Ladevorg&auml;nge ID.BUZZ &ndash; OA-FX25E</h2>';
 
 export function buildHtmlEmail(
-  chargesByMonth: Map<string, Charge[]>,
-  monthKeys: string[],
+  charges: Charge[],
   periodLabel: string,
   totalEnergy: number,
   totalPrice: number,
-  fullBilling: boolean,
 ): { html: string; text: string } {
   let tableRows = '';
 
-  for (const monthKey of monthKeys) {
-    const charges = chargesByMonth.get(monthKey);
-    if (!charges) continue;
+  for (const charge of charges) {
+    const created = formatDateDE(charge.created);
+    const finished = formatDateDE(charge.finished);
+    const odometer =
+      charge.odometer !== null
+        ? Math.round(charge.odometer).toLocaleString('de-DE')
+        : '';
+    const energy = round2(charge.chargedEnergy);
+    const price = round2(charge.price);
 
-    let mEnergy = 0;
-    let mPrice = 0;
-
-    for (const charge of charges) {
-      const created = formatDateDE(charge.created);
-      const finished = formatDateDE(charge.finished);
-      const odometer =
-        charge.odometer !== null
-          ? Math.round(charge.odometer).toLocaleString('de-DE')
-          : '';
-      const energy = round2(charge.chargedEnergy);
-      const price = round2(charge.price);
-      mEnergy += energy;
-      mPrice += price;
-
-      tableRows += '<tr>'
-        + `<td style="padding:6px 10px;border-bottom:1px solid #e0e0e0;">${created}</td>`
-        + `<td style="padding:6px 10px;border-bottom:1px solid #e0e0e0;">${finished}</td>`
-        + `<td style="padding:6px 10px;border-bottom:1px solid #e0e0e0;text-align:right;">${odometer}</td>`
-        + `<td style="padding:6px 10px;border-bottom:1px solid #e0e0e0;text-align:right;">${fmtNum(energy)}</td>`
-        + `<td style="padding:6px 10px;border-bottom:1px solid #e0e0e0;text-align:right;">${fmtNum(charge.pricePerKWh)}</td>`
-        + `<td style="padding:6px 10px;border-bottom:1px solid #e0e0e0;text-align:right;">${fmtNum(price)}</td>`
-        + '</tr>';
-    }
-
-    const mAvg = mEnergy > 0 ? mPrice / mEnergy : 0;
-    const monthLabel = formatMonthDE(monthKey);
-
-    tableRows += '<tr style="background-color:#D9E1F2;font-weight:bold;">'
-      + `<td colspan="3" style="padding:6px 10px;">Summe ${monthLabel}</td>`
-      + `<td style="padding:6px 10px;text-align:right;">${fmtNum(mEnergy)}</td>`
-      + `<td style="padding:6px 10px;text-align:right;">${fmtNum(mAvg)}</td>`
-      + `<td style="padding:6px 10px;text-align:right;">${fmtNum(mPrice)}</td>`
+    tableRows += '<tr>'
+      + `<td style="padding:6px 10px;border-bottom:1px solid #e0e0e0;">${created}</td>`
+      + `<td style="padding:6px 10px;border-bottom:1px solid #e0e0e0;">${finished}</td>`
+      + `<td style="padding:6px 10px;border-bottom:1px solid #e0e0e0;text-align:right;">${odometer}</td>`
+      + `<td style="padding:6px 10px;border-bottom:1px solid #e0e0e0;text-align:right;">${fmtNum(energy)}</td>`
+      + `<td style="padding:6px 10px;border-bottom:1px solid #e0e0e0;text-align:right;">${fmtNum(charge.pricePerKWh)}</td>`
+      + `<td style="padding:6px 10px;border-bottom:1px solid #e0e0e0;text-align:right;">${fmtNum(price)}</td>`
       + '</tr>';
   }
 
@@ -74,11 +53,7 @@ export function buildHtmlEmail(
     + `<td style="padding:6px 10px;text-align:right;">${fmtNum(totalPrice)}</td>`
     + '</tr>';
 
-  const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head>'
-    + '<body style="font-family:Arial,Helvetica,sans-serif;color:#333;margin:0;padding:20px;background-color:#f5f5f5;">'
-    + '<div style="max-width:800px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">'
-    + '<div style="background-color:#1a3a5c;color:#fff;padding:20px 24px;">'
-    + '<h2 style="margin:0;font-size:20px;">Ladevorg&auml;nge ID.BUZZ &ndash; OA-FX25E</h2>'
+  const html = HEADER_HTML
     + `<p style="margin:6px 0 0;font-size:14px;opacity:0.85;">${escapeHtml(periodLabel)}</p>`
     + '</div>'
     + '<div style="padding:24px;">'
@@ -93,9 +68,7 @@ export function buildHtmlEmail(
     + '</tr></thead>'
     + `<tbody>${tableRows}</tbody>`
     + '</table>'
-    + (fullBilling
-      ? '<p style="margin:20px 0 0;font-size:12px;color:#888;">Die vollst&auml;ndige Aufstellung ist als Excel-Datei angeh&auml;ngt.</p>'
-      : '')
+    + '<p style="margin:20px 0 0;font-size:12px;color:#888;">Die vollst&auml;ndige Aufstellung ist als Excel-Datei angeh&auml;ngt.</p>'
     + '</div></div></body></html>';
 
   const text =
@@ -103,7 +76,23 @@ export function buildHtmlEmail(
     + `Gesamtverbrauch: ${fmtNum(totalEnergy)} kWh\n`
     + `Durchschnittspreis: ${fmtNum(avgPrice)} EUR/kWh\n`
     + `Gesamtkosten: ${fmtNum(totalPrice)} EUR`
-    + (fullBilling ? '\n\nDetails siehe Excel-Anhang.' : '');
+    + '\n\nDetails siehe Excel-Anhang.';
+
+  return { html, text };
+}
+
+export function buildEmptyHtmlEmail(periodLabel: string): {
+  html: string;
+  text: string;
+} {
+  const html = HEADER_HTML
+    + `<p style="margin:6px 0 0;font-size:14px;opacity:0.85;">${escapeHtml(periodLabel)}</p>`
+    + '</div>'
+    + '<div style="padding:24px;">'
+    + '<p>Keine Ladevorg&auml;nge vorhanden</p>'
+    + '</div></div></body></html>';
+
+  const text = `Ladevorgänge ID.BUZZ - OA-FX25E\n${periodLabel}\n\nKeine Ladevorgänge vorhanden`;
 
   return { html, text };
 }
