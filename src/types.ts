@@ -26,8 +26,6 @@ export interface Env {
   SMTP_PASSWORD: string; // wrangler secret put SMTP_PASSWORD
   SMTP_FROM: string;
   INVOICE_RECIPIENTS: string;
-  SUMMARY_RECIPIENTS: string;
-  MIN_BILLING_AMOUNT: string;
 }
 
 export interface MonthInfo {

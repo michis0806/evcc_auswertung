@@ -10,7 +10,6 @@ Cloudflare Worker zur automatischen Abrechnung von Ladevorgängen und Backup der
 - Filtert nach konfigurierten Fahrzeugen und Ladepunkt
 - Erzeugt eine Excel-Datei mit Abrechnungsdetails
 - Versendet die Abrechnung per E-Mail (SMTP)
-- Unterscheidet zwischen monatlicher Zusammenfassung und voller Abrechnung (ab Mindestbetrag oder bei Jahreswechsel)
 
 ### evcc Datenbank-Backup
 
@@ -74,16 +73,7 @@ Alle Secrets werden über `wrangler secret put <NAME>` gesetzt:
 | `SMTP_USERNAME`              | SMTP-Benutzername                               |
 | `SMTP_PASSWORD`              | SMTP-Passwort                                   |
 | `SMTP_FROM`             | Absender-E-Mail-Adresse                         |
-| `INVOICE_RECIPIENTS`       | Empfänger bei voller Abrechnung (kommagetrennt) |
-| `SUMMARY_RECIPIENTS` | Empfänger bei monatlicher Zusammenfassung     |
-
-## Umgebungsvariablen
-
-In `wrangler.json` unter `vars` konfiguriert:
-
-| Variable             | Beschreibung                          | Default |
-| -------------------- | ------------------------------------- | ------- |
-| `MIN_BILLING_AMOUNT` | Mindestbetrag (EUR) für volle Abrechnung | `25`  |
+| `INVOICE_RECIPIENTS`       | Empfänger der Abrechnung (kommagetrennt)        |
 
 ## Setup
 
@@ -102,7 +92,6 @@ wrangler secret put SMTP_USERNAME
 wrangler secret put SMTP_PASSWORD
 wrangler secret put SMTP_FROM
 wrangler secret put INVOICE_RECIPIENTS
-wrangler secret put SUMMARY_RECIPIENTS
 
 # R2 Bucket anlegen
 wrangler r2 bucket create evcc-backup

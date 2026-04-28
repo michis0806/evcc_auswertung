@@ -21,7 +21,6 @@ export function buildHtmlEmail(
   periodLabel: string,
   totalEnergy: number,
   totalPrice: number,
-  fullBilling: boolean,
 ): { html: string; text: string } {
   let tableRows = '';
 
@@ -93,9 +92,7 @@ export function buildHtmlEmail(
     + '</tr></thead>'
     + `<tbody>${tableRows}</tbody>`
     + '</table>'
-    + (fullBilling
-      ? '<p style="margin:20px 0 0;font-size:12px;color:#888;">Die vollst&auml;ndige Aufstellung ist als Excel-Datei angeh&auml;ngt.</p>'
-      : '')
+    + '<p style="margin:20px 0 0;font-size:12px;color:#888;">Die vollst&auml;ndige Aufstellung ist als Excel-Datei angeh&auml;ngt.</p>'
     + '</div></div></body></html>';
 
   const text =
@@ -103,7 +100,7 @@ export function buildHtmlEmail(
     + `Gesamtverbrauch: ${fmtNum(totalEnergy)} kWh\n`
     + `Durchschnittspreis: ${fmtNum(avgPrice)} EUR/kWh\n`
     + `Gesamtkosten: ${fmtNum(totalPrice)} EUR`
-    + (fullBilling ? '\n\nDetails siehe Excel-Anhang.' : '');
+    + '\n\nDetails siehe Excel-Anhang.';
 
   return { html, text };
 }

@@ -127,15 +127,7 @@ async function processCharges(env: Env): Promise<void> {
   if (allChargeCount === 0) {
     console.log('Keine relevanten Ladevorgänge gefunden, sende Info-Mail.');
 
-    const recipientStr = env.SUMMARY_RECIPIENTS || env.INVOICE_RECIPIENTS;
-    if (!recipientStr) {
-      console.log('Keine Empfänger konfiguriert, überspringe Info-Mail.');
-      state.last_billed_month = months[months.length - 1].key;
-      await saveState(env, state);
-      console.log(`Marker auf ${state.last_billed_month} gesetzt.`);
-      return;
-    }
-    const recipients = recipientStr.split(',').map((s) => s.trim());
+    const recipients = env.INVOICE_RECIPIENTS.split(',').map((s) => s.trim());
 
     const subject = `Ladevorgänge zuhause ID.BUZZ OA-FX25E vom ${periodLabel}`;
     const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head>'
@@ -171,42 +163,23 @@ async function processCharges(env: Env): Promise<void> {
     return;
   }
 
-  // Abrechnungstyp bestimmen:
-  //   Dezember → volle Abrechnung (Jahreswechsel)
-  //   >= Mindestbetrag → volle Abrechnung
-  const minAmount = parseFloat(env.MIN_BILLING_AMOUNT || '25');
-  const includesDecember = months.some((m) => m.month === 12);
-  const fullBilling = totalPrice >= minAmount || includesDecember;
+  const xlsxData = await generateExcel(chargesByMonth, monthKeys);
+  const xlsxFilename =
+    months.length === 1
+      ? `charging_${months[0].key}.xlsx`
+      : `charging_${months[0].key}_${months[months.length - 1].key}.xlsx`;
+  console.log('Excel erstellt');
 
-  // Excel nur bei voller Abrechnung erzeugen
-  let xlsxData: Uint8Array | undefined;
-  let xlsxFilename: string | undefined;
-
-  if (fullBilling) {
-    xlsxData = await generateExcel(chargesByMonth, monthKeys);
-    xlsxFilename =
-      months.length === 1
-        ? `charging_${months[0].key}.xlsx`
-        : `charging_${months[0].key}_${months[months.length - 1].key}.xlsx`;
-    console.log('Excel erstellt');
-  }
-
-  // HTML-Email aufbauen
   const { html, text } = buildHtmlEmail(
     chargesByMonth,
     monthKeys,
     periodLabel,
     totalEnergy,
     totalPrice,
-    fullBilling,
   );
 
   const subject = `Ladevorgänge zuhause ID.BUZZ OA-FX25E vom ${periodLabel}`;
-  const recipients = (
-    fullBilling ? env.INVOICE_RECIPIENTS : env.SUMMARY_RECIPIENTS
-  )
-    .split(',')
-    .map((s) => s.trim());
+  const recipients = env.INVOICE_RECIPIENTS.split(',').map((s) => s.trim());
 
   // Email per SMTP senden
   await sendEmail(
@@ -221,9 +194,7 @@ async function processCharges(env: Env): Promise<void> {
     subject,
     html,
     text,
-    xlsxData && xlsxFilename
-      ? { filename: xlsxFilename, content: xlsxData }
-      : undefined,
+    { filename: xlsxFilename, content: xlsxData },
   );
 
   console.log('E-Mail wurde erfolgreich verschickt.');

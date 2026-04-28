@@ -19,9 +19,6 @@
       "binding": "STATE"
     }
   ],
-  "vars": {
-    "MIN_BILLING_AMOUNT": "0"
-  },
   "observability": {
     "enabled": false,
     "head_sampling_rate": 1,
