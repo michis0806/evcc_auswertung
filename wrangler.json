@@ -14,11 +14,6 @@
       "jurisdiction": "eu"
     }
   ],
-  "kv_namespaces": [
-    {
-      "binding": "STATE"
-    }
-  ],
   "observability": {
     "enabled": false,
     "head_sampling_rate": 1,

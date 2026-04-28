@@ -42,15 +42,13 @@ src/
 
 | Methode | Pfad       | Beschreibung              |
 | ------- | ---------- | ------------------------- |
-| `GET`   | `/`        | Status (letzter abgerechneter Monat) |
-| `POST`  | `/trigger` | Manuelle Abrechnung       |
+| `GET`   | `/`        | Status                    |
+| `POST`  | `/trigger` | Manuelle Abrechnung – optional `?month=YYYY-MM` (Default: Vormonat) |
 | `POST`  | `/backup`  | Manuelles Backup          |
 
+Beispiel: `curl -X POST https://<worker>/trigger?month=2026-03`
+
 ## Cloudflare-Ressourcen
-
-### KV Namespace
-
-- **Binding:** `STATE` – Speichert den Abrechnungsstatus (`last_billed_month`)
 
 ### R2 Bucket
 
