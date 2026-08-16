@@ -63,7 +63,7 @@ Alle Secrets werden über `wrangler secret put <NAME>` gesetzt:
 | Secret                       | Beschreibung                                    |
 | ---------------------------- | ----------------------------------------------- |
 | `EVCC_URL`                   | evcc Base-URL (z.B. `https://evcc.example.com`) |
-| `EVCC_ADMIN_PASS`            | evcc Admin-Passwort (für Backup-API)            |
+| `EVCC_API_KEY`               | evcc API-Key (für Backup-API, erzeugbar in der evcc-UI unter Konfiguration → Sicherheit) |
 | `EVCC_BACKUP_DAYS`           | Aufbewahrungsdauer der Backups in Tagen         |
 | `CARS`                       | Kommagetrennte Fahrzeugnamen                    |
 | `SMTP_HOST`                  | SMTP-Server                                     |
@@ -81,7 +81,7 @@ npm install
 
 # Secrets setzen
 wrangler secret put EVCC_URL
-wrangler secret put EVCC_ADMIN_PASS
+wrangler secret put EVCC_API_KEY
 wrangler secret put EVCC_BACKUP_DAYS
 wrangler secret put CARS
 wrangler secret put SMTP_HOST

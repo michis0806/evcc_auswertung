@@ -12,7 +12,7 @@ export interface Charge {
 export interface Env {
   EVCC_BACKUP?: R2Bucket;
   EVCC_URL: string;
-  EVCC_ADMIN_PASS?: string;
+  EVCC_API_KEY?: string;
   EVCC_BACKUP_DAYS?: string;
   CARS: string;
   SMTP_HOST: string;

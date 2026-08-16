@@ -4,38 +4,17 @@ export async function performBackup(env: Env): Promise<string> {
   if (!env.EVCC_BACKUP) {
     throw new Error('Kein EVCC_BACKUP R2-Binding konfiguriert');
   }
+  if (!env.EVCC_API_KEY) {
+    throw new Error('Kein EVCC_API_KEY konfiguriert');
+  }
 
   const bucket = env.EVCC_BACKUP;
   const baseUrl = env.EVCC_URL.replace(/\/+$/, '');
 
-  // Bei evcc einloggen, um Auth-Cookie zu erhalten
-  const loginRes = await fetch(`${baseUrl}/api/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password: env.EVCC_ADMIN_PASS }),
-  });
-
-  if (!loginRes.ok) {
-    const body = await loginRes.text().catch(() => '');
-    throw new Error(`evcc Login fehlgeschlagen: HTTP ${loginRes.status} – ${body}`);
-  }
-
-  const setCookie = loginRes.headers.get('set-cookie');
-  if (!setCookie) {
-    throw new Error('evcc Login: Kein Auth-Cookie erhalten');
-  }
-
-  // Cookie-Wert extrahieren (vor dem ersten Semikolon)
-  const cookieHeader = setCookie.split(';')[0];
-
-  // SQLite-Backup über die API herunterladen (POST mit Passwort im Body)
-  const backupRes = await fetch(`${baseUrl}/api/system/backup`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Cookie: cookieHeader,
-    },
-    body: JSON.stringify({ password: env.EVCC_ADMIN_PASS }),
+  // SQLite-Backup über die API herunterladen
+  // (seit evcc 0.309.0: GET /api/db/backup mit API-Key statt POST /api/system/backup)
+  const backupRes = await fetch(`${baseUrl}/api/db/backup`, {
+    headers: { Authorization: `Bearer ${env.EVCC_API_KEY}` },
   });
 
   if (!backupRes.ok) {
